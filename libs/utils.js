@@ -1,7 +1,11 @@
 var logs = [];
 // get project name in google console from current url
 function locationProjectName() {
-    return document.location.toString().match(/\project=(.+)$/)[1];
+    var projectName = document.location.toString().match(/\project=(.+)$/);
+    if (projectName.length > 0 ) {
+        return document.location.toString().match(/\project=(.+)$/)[1];
+    }
+    return null;
 }
 
 function overviewPageUrl(projectId) {

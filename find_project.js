@@ -18,7 +18,6 @@ jQuery(function () {
                 var needAcceptTerms = $("#tos-agree");
                 if (needAcceptTerms.length) {
                     var message = "You must agree to the Admob <b>Terms of Service</b> and click <b>Create</b> to continue.";
-                    sendOut(0, message);
                     modal.show("Appodeal Chrome Extension", message);
                     logConsole(message);
                 } else {
@@ -28,11 +27,12 @@ jQuery(function () {
                 }
                 // go to the newly created project
                 waitForElement("a:contains('Appodeal')", null, function (element) {
-                    logConsole("New project is found");
                     var projectName = locationProjectName();
-                    var projectUrl = overviewPageUrl(projectName);
-                    logConsole("Redirect to the new project", projectUrl);
-                    document.location.href = projectUrl;
+                    if(projectName){
+                        var projectUrl = overviewPageUrl(projectName);
+                        logConsole("New project is found. Redirect to the new project", projectUrl);
+                        document.location.href = projectUrl;
+                    }
                 })
             }, 2000);
         })
@@ -42,7 +42,7 @@ jQuery(function () {
         appendJQuery(function () {
             logConsole('Find Appodeal project. Please wait');
             modal = new Modal();
-            modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait");
+            modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait 30 seconds");
             var row = '[ng-class=\"{\'p6n-tablerow-selected\': projectListCtrl.selectionState[project.id]}\"]';
             // it finds selector 30 seconds then create Projects
             waitForElement(row, 60 , function (element) {

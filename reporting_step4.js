@@ -1,4 +1,4 @@
-sendOut(0, "Create and sync credentials.");
+logConsole("Create and sync credentials.");
 var modal;
 var redirect_uri = "https://www.appodeal.com/admin/oauth2callback";
 jQuery(function () {

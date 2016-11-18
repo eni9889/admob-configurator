@@ -1,4 +1,4 @@
-sendOut(0, "Open project configuration.");
+logConsole("Open project configuration.");
 var modal;
 
 jQuery(function () {
@@ -22,7 +22,7 @@ jQuery(function () {
         var disableApiBtnOld = $(disableBtnCodeOld);
 
         // We do not need AdSence API enabling if it has been already enabled:
-        if ((enableApiBtn.length || enableApiBtnOld.length) && !is_working) {
+        if ((enableApiBtn.length || enableApiBtnOld.length) && !is_working && project_name) {
             // Enable API button found
             is_working = true;
             logConsole('enabling adsence api...');

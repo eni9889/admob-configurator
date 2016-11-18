@@ -1,4 +1,4 @@
-sendOut(0, "Create new project from the library page (new accounts)");
+logConsole("Create new project from the library page (new accounts)");
 var modal, NAME_PROJECT = "Appodeal";
 
 setTimeout(function () {
