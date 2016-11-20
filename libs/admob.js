@@ -14,6 +14,7 @@ var Admob = function(userId, apiKey, publisherId, accountEmail, interstitialBids
   Admob.types = {text: 0, image: 1, video: 2};
   // appodeal ad unit params
   Admob.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4};
+  Admob.deviceType = {tablet: 1, phone: 2};
   // adunits bids
   Admob.interstitialBids = interstitialBids;
   Admob.bannerBids = bannerBids;
