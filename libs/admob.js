@@ -61,7 +61,7 @@ Admob.prototype.syncInventory = function(callback) {
                   self.finishDialog();
                   self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
                     console.log("Sent finish inventory report");
-                  })
+                  });
                   callback();
                 })
               })
@@ -71,7 +71,7 @@ Admob.prototype.syncInventory = function(callback) {
       })
     })
   })
-}
+};
 
 // show finish dialog with results info
 Admob.prototype.finishDialog = function() {
@@ -90,7 +90,7 @@ Admob.prototype.finishDialog = function() {
   self.sendReports({mode: 0, timeShift: 1000}, [items.join("")], function() {
     console.log("Sent finish reports");
   });
-}
+};
 
 // show error modal window, send report to server
 Admob.prototype.showErrorDialog = function(content) {
@@ -101,7 +101,7 @@ Admob.prototype.showErrorDialog = function(content) {
   var serializedAdmob = JSON.stringify({message: message, admob: self});
   console.log(serializedAdmob);
   self.sendReports({mode: 1, note: "json"}, [serializedAdmob], function() {});
-}
+};
 
 // show information modal window
 Admob.prototype.showInfoDialog = function(content) {
@@ -109,14 +109,14 @@ Admob.prototype.showInfoDialog = function(content) {
   console.log(content);
   self.sendReports({mode: 0}, [content], function() {
     console.log("Sent information report");
-  })
+  });
   self.modal.show("Appodeal Chrome Extension", content);
-}
+};
 
 // make a request to admob inventory and retry in case of error
 Admob.prototype.inventoryPost = function(json, callback, options) {
   var self = this;
-  if (typeof(options) === 'undefined') { options = {} };
+  if (typeof(options) === 'undefined') { options = {} }
   var params = JSON.stringify(json);
   // result with error or something
   function errorEvent(content, data) {
@@ -151,7 +151,7 @@ Admob.prototype.inventoryPost = function(json, callback, options) {
     .fail(function(data) {
       errorEvent("Failed to make an internal request.", data);
     });
-}
+};
 
 // send json to server (message and request with response format)
 Admob.prototype.jsonReport = function(mode, content, json, data) {
@@ -159,7 +159,7 @@ Admob.prototype.jsonReport = function(mode, content, json, data) {
   console.log(content + " " + JSON.stringify(json) + " -> " + JSON.stringify(data));
   var r = {message: content, request: json, response: data};
   self.sendReports({mode: mode, note: "json"}, [JSON.stringify(r)], function() {});
-}
+};
 
 // make a request to admob inventory url
 Admob.prototype.syncPost = function(json, callback) {
@@ -183,12 +183,12 @@ Admob.prototype.syncPost = function(json, callback) {
       self.jsonReport(1, "Failed to make a server sync request.", json, data);
       self.showErrorDialog("Failed to make a server sync request.");
     });
-}
+};
 
 // make server adunit code from adunit internal id
 Admob.prototype.adunitServerId = function(internalId) {
   return ("ca-app-" + this.accountId + "/" + internalId);
-}
+};
 
 // find new and updated ad units (compare local and remote)
 // convert to server request format
@@ -278,12 +278,12 @@ Admob.prototype.getAccountId = function() {
     self.showErrorDialog(error);
   }
   return (self.accountId);
-}
+};
 
 // get chrome extension version
 Admob.prototype.getVersion = function() {
   this.version = extensionVersion();
-}
+};
 
 // check if publisher id (remote) is similar to current admob account id
 Admob.prototype.isPublisherIdRight = function() {
@@ -294,14 +294,14 @@ Admob.prototype.isPublisherIdRight = function() {
     return false;
   }
   return true;
-}
+};
 
 // default appodeal local app name (not linked to store yet)
 Admob.defaultAppName = function(app) {
   var maxLength = 80;
   var name = 'Appodeal/' + app.id + "/" + app.appName;
   return name.substring(0, maxLength);
-}
+};
 
 // loop with next after callback, mutate array
 Admob.synchronousEach = function(array, callback, finish) {
@@ -313,7 +313,7 @@ Admob.synchronousEach = function(array, callback, finish) {
   } else {
     finish();
   }
-}
+};
 
 // Extract information from ad Admob ad unit by name
 Admob.adUnitRegex = function(name) {
@@ -655,7 +655,7 @@ Admob.prototype.getPageToken = function() {
   xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
   this.token = xsrf;
   return this.token;
-}
+};
 
 // map apps between appodeal and admob
 // for each appodeal app find admob app and select local adunits
@@ -703,7 +703,7 @@ Admob.prototype.mapApps = function(callback) {
   } catch(e) {
     self.showErrorDialog("Map apps: " + e.message);
   }
-}
+};
 
 // store all existing store ids
 Admob.prototype.selectStoreIds = function() {
@@ -714,7 +714,7 @@ Admob.prototype.selectStoreIds = function() {
       return (localApp[4]);
     });
   }
-}
+};
 
 // Work only with visible admob apps
 Admob.prototype.filterHiddenLocalApps = function() {
@@ -725,7 +725,7 @@ Admob.prototype.filterHiddenLocalApps = function() {
       return (localApp[19] == 0);
     });
   }
-}
+};
 
 // select only new and active ad units with Appodeal-configured types
 Admob.prototype.selectLocalAdunits = function(admobAppId) {
@@ -745,7 +745,7 @@ Admob.prototype.selectLocalAdunits = function(admobAppId) {
     })
   }
   return (selectedAdUnits);
-}
+};
 
 // Create local apps for all apps from inventory with missing local apps
 Admob.prototype.createMissingApps = function(callback) {
@@ -754,7 +754,7 @@ Admob.prototype.createMissingApps = function(callback) {
   // select apps without local admob app
   var newApps = $.grep(self.inventory, function(app, i) {
     return (!app.localApp);
-  })
+  });
   // create missing local apps
   Admob.synchronousEach(newApps, function(app, next) {
     self.createLocalApp(app, function(localApp) {
@@ -765,7 +765,7 @@ Admob.prototype.createMissingApps = function(callback) {
   }, function() {
     callback();
   })
-}
+};
 
 // Link local apps with play market or itunes
 Admob.prototype.linkApps = function(callback) {
@@ -774,7 +774,7 @@ Admob.prototype.linkApps = function(callback) {
   // select not linked apps (without amazon)
   var notLinkedApps = $.grep(self.inventory, function(app, i) {
     return (app.search_in_store && app.store_name && app.localApp && !app.localApp[4]);
-  })
+  });
   // link not linked local apps
   Admob.synchronousEach(notLinkedApps, function(app, next) {
     self.linkLocalApp(app, function() {
@@ -783,7 +783,7 @@ Admob.prototype.linkApps = function(callback) {
   }, function() {
     callback();
   })
-}
+};
 
 // find missing local adunits
 Admob.prototype.makeMissingAdunitsLists = function(callback) {
@@ -792,12 +792,12 @@ Admob.prototype.makeMissingAdunitsLists = function(callback) {
   try {
     self.inventory.forEach(function(app, index, apps) {
       app.missingAdunits = Admob.missingAdunits(app);
-    })
+    });
     callback();
   } catch(e) {
     self.showErrorDialog("Missing adunits list: " + e.message);
   }
-}
+};
 
 // create local adunits in local apps
 Admob.prototype.createMissingAdunits = function(callback) {
@@ -819,7 +819,7 @@ Admob.prototype.createMissingAdunits = function(callback) {
   }, function() {
     callback();
   })
-}
+};
 
 // create local adunits for app from prepared scheme
 // sync app adunits with server
@@ -836,7 +836,7 @@ Admob.prototype.createAdunits = function(app, callback) {
       callback();
     })
   })
-}
+};
 
 // send information about local apps and adunits to the server
 Admob.prototype.syncWithServer = function(app, callback) {
@@ -856,7 +856,7 @@ Admob.prototype.syncWithServer = function(app, callback) {
       items.push("<h4>" + h.name + "</h4>");
       h.adunits.forEach(function(adunit) {
         items.push("<p>" + adunit.name + "</p>");
-      })
+      });
       self.report.push.apply(self.report, items);
       self.sendReports({mode: 0}, [items.join("")], function() {
         console.log("Sent reports from " + app.appName);
@@ -866,7 +866,7 @@ Admob.prototype.syncWithServer = function(app, callback) {
   } else {
     callback(params);
   }
-}
+};
 
 // create local app with default app name
 Admob.prototype.createLocalApp = function(app, callback) {
@@ -882,7 +882,7 @@ Admob.prototype.createLocalApp = function(app, callback) {
       self.showErrorDialog("Create local app: " + e.message);
     }
   })
-}
+};
 
 // link local app with Play Market and App Store
 // search by name; update local app with linked data hash
@@ -909,7 +909,7 @@ Admob.prototype.linkLocalApp = function(app, callback) {
   } else {
     callback();
   }
-}
+};
 
 // search app in stores by name for further linking
 // save store data in inventory array
@@ -920,7 +920,7 @@ Admob.prototype.searchAppInStores = function(app, callback) {
   params = {
     "method": "searchMobileApplication",
     "params": {"2": searchString, "3": 0, "4": 1000, "5": app.os}, "xsrf": self.token
-  }
+  };
   self.inventoryPost(params, function(data) {
     try {
       var storeApps = data.result[2];
@@ -936,7 +936,7 @@ Admob.prototype.searchAppInStores = function(app, callback) {
       callback();
     }
   }, {skip: true})
-}
+};
 
 // update local app with market hash (data from search in stores)
 // actually it links local app to store
@@ -952,7 +952,7 @@ Admob.prototype.updateAppStoreHash = function(app, storeApp, callback) {
       }
     },
     "xsrf": self.token
-  }
+  };
   self.inventoryPost(params, function(data) {
     try {
       var localApp = data.result[1][1][0];
@@ -965,7 +965,7 @@ Admob.prototype.updateAppStoreHash = function(app, storeApp, callback) {
       callback();
     }
   }, {skip: true})
-}
+};
 
 // add new store id to store ids array
 Admob.prototype.addStoreId = function(storeId) {
@@ -975,7 +975,7 @@ Admob.prototype.addStoreId = function(storeId) {
   } else {
     self.storeIds = [storeId];
   }
-}
+};
 
 // create local adunit from scheme and insert bid floor if required
 // scheme is a handy hash with params for creating new adunit
@@ -985,7 +985,7 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
   params = {
     "method": "insertInventory",
     "params": {"3": {"2": s.app, "3": s.name, "14": s.adType, "16": s.formats}}, "xsrf": self.token
-  }
+  };
   self.inventoryPost(params, function(data) {
     try {
       var localAdunit = data.result[1][2][0];
@@ -998,7 +998,7 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
             "4": [{"2": 1, "3": "1", "5": {"1": {"1": s.bid, "2": "USD"}}, "7": 0, "9": 1}], "5": 0
           },
           "xsrf": self.token
-        }
+        };
         self.inventoryPost(mediationParams, function(data) {
           try {
             var localAdunit = data.result[1][2][0];
@@ -1014,7 +1014,7 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
       self.showErrorDialog("Create local adunit: " + e.message);
     }
   })
-}
+};
 
 // helper to find element with in array by the conditions
 Array.prototype.findByProperty = function(condition) {
@@ -1035,7 +1035,7 @@ Admob.prototype.addLocalAdunitToInventory = function(app, localAdunit) {
   } else {
     app.localAdunits = [localAdunit];
   }
-}
+};
 
 // send logs to server
 Admob.prototype.sendReports = function(params, items, callback) {
@@ -1046,11 +1046,11 @@ Admob.prototype.sendReports = function(params, items, callback) {
       h.note = params.note;
     }
     return h;
-  })
+  });
   sendLogs(self.apiKey, self.userId, params.mode, 3, self.version, reportItems, function() {
     callback();
   })
-}
+};
 
 Admob.prototype.interstitialAdUnitFormats = function(adUnit) {
   var self = this;
@@ -1123,7 +1123,7 @@ Admob.prototype.updateAppAdunitFormats = function(app, callback) {
   } else {
     callback();
   }
-}
+};
 
 // Add video format to all appodeal app's adunits
 Admob.prototype.updateFormats = function(callback) {
@@ -1137,4 +1137,4 @@ Admob.prototype.updateFormats = function(callback) {
   }, function() {
     callback();
   })
-}
+};
