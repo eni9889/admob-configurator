@@ -27,6 +27,7 @@ var Admob = function(userId, apiKey, publisherId, accountEmail, interstitialBids
     adType: 14,
     formats: 16
   };
+    Admob.deviceType = {tablet: 1, phone: 2};
   // initialize modal window
   this.modal = new Modal();
 };
@@ -319,10 +320,11 @@ Admob.synchronousEach = function(array, callback, finish) {
 Admob.adUnitRegex = function(name) {
   var result = {};
   // works with both old and new ad unit names
-  var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\/(image|text|video|all)\//.exec(name);
+    var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\/(image|text|video|all)\/(phone|tablet)\//.exec(name);
   if (matchedType && matchedType.length > 1) {
     result.adType = matchedType[2];
     result.formatName = matchedType[3];
+      result.deviceType = matchedType[4];
     if (matchedType[1]) {
       result.appId = parseInt(matchedType[1].substring(1));
     }
@@ -418,6 +420,9 @@ Admob.getOriginalAdTypeByAdUnit = function(adUnit) {
 // make scheme array from existing local adunits to compare it with the full scheme and find missing
 Admob.localAdunitsToScheme = function(app) {
   var scheme = [];
+
+    var deviceType = 'phone';
+
   if (!app.localAdunits) {
     return scheme;
   }
@@ -443,10 +448,10 @@ Admob.localAdunitsToScheme = function(app) {
       if (adUnit[10]) {
         bid = adUnit[10][0][5][1][1];
         var floatBid = Admob.adunitBid(adUnit);
-        name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
+        name = Admob.adunitName(app, adTypeName, adFormatName, floatBid, deviceType);
         hash = {app: admobAppId, name: name, originalAdType: originalAdType, adType: adType, formats: formats, bid: bid};
       } else {
-        name = Admob.adunitName(app, adTypeName, adFormatName);
+        name = Admob.adunitName(app, adTypeName, adFormatName, null, deviceType);
         hash = {app: admobAppId, name: name, originalAdType: originalAdType, adType: adType, formats: formats};
       }
       scheme.push(hash);
@@ -458,52 +463,54 @@ Admob.localAdunitsToScheme = function(app) {
 // Find all missing adunits for app in inventory
 Admob.adunitsScheme = function(app) {
   var scheme = [];
+
+    var deviceType = 'phone';
   // default ad units
   scheme.push({
     app: app.localApp[1],
-    name: Admob.adunitName(app, "interstitial", "image"),
+    name: Admob.adunitName(app, "interstitial", "image", null, deviceType),
     adType: 1,
     formats: [1],
     originalAdType: Admob.originalAdTypeByName('interstitial')
   });
   scheme.push({
     app: app.localApp[1],
-    name: Admob.adunitName(app, "interstitial", "text"),
+    name: Admob.adunitName(app, "interstitial", "text", null, deviceType),
     adType: 1,
     formats: [0],
     originalAdType: Admob.originalAdTypeByName('interstitial')
   });
   scheme.push({
     app: app.localApp[1],
-    name: Admob.adunitName(app, "interstitial", "video"),
+    name: Admob.adunitName(app, "interstitial", "video", null, deviceType),
     adType: 1,
     formats: [2],
     originalAdType: Admob.originalAdTypeByName('video')
   });
   scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "banner", "image"),
+        name: Admob.adunitName(app, "banner", "image", null, deviceType),
         adType: 0,
         formats: [1],
         originalAdType: Admob.originalAdTypeByName('banner')
       });
   scheme.push({
     app: app.localApp[1],
-    name: Admob.adunitName(app, "banner", "text"),
+    name: Admob.adunitName(app, "banner", "text", null, deviceType),
     adType: 0,
     formats: [0],
     originalAdType: Admob.originalAdTypeByName('banner')
   });
   scheme.push({
     app: app.localApp[1],
-    name: Admob.adunitName(app, "mrec", "image"),
+    name: Admob.adunitName(app, "mrec", "image", null, deviceType),
     adType: 0,
     formats: [1],
     originalAdType: Admob.originalAdTypeByName('mrec')
   });
   scheme.push({
     app: app.localApp[1],
-    name: Admob.adunitName(app, "mrec", "text"),
+    name: Admob.adunitName(app, "mrec", "text", null, deviceType),
     adType: 0,
     formats: [0],
     originalAdType: Admob.originalAdTypeByName('mrec')
@@ -515,7 +522,7 @@ Admob.adunitsScheme = function(app) {
   // ad units with bid floors
   // interstitial ad units
   Admob.interstitialBids.forEach(function(bid) {
-    var name = Admob.adunitName(app, "interstitial", "image", bid);
+    var name = Admob.adunitName(app, "interstitial", "image", bid, deviceType);
     scheme.push(
         {
           app: app.localApp[1],
@@ -528,7 +535,7 @@ Admob.adunitsScheme = function(app) {
   });
   // interstitial ad units with all formats
   Admob.interstitialBids.forEach(function(bid) {
-    var name = Admob.adunitName(app, "interstitial", "all", bid);
+    var name = Admob.adunitName(app, "interstitial", "all", bid, deviceType);
     scheme.push(
         {
           app: app.localApp[1],
@@ -541,7 +548,7 @@ Admob.adunitsScheme = function(app) {
   });
   // video ad units
   Admob.videoBids.forEach(function(bid) {
-    var name = Admob.adunitName(app, "interstitial", "video", bid);
+    var name = Admob.adunitName(app, "interstitial", "video", bid, deviceType);
     scheme.push(
         {
           app: app.localApp[1],
@@ -554,7 +561,7 @@ Admob.adunitsScheme = function(app) {
   });
   // banner ad units
   Admob.bannerBids.forEach(function(bid) {
-    var name = Admob.adunitName(app, "banner", "image", bid);
+    var name = Admob.adunitName(app, "banner", "image", bid, deviceType);
     scheme.push(
         {
           app: app.localApp[1], name: name, originalAdType: Admob.originalAdTypeByName('banner'),
@@ -563,7 +570,7 @@ Admob.adunitsScheme = function(app) {
   });
   // mrec ad units
   Admob.mrecBids.forEach(function(bid) {
-    var name = Admob.adunitName(app, "mrec", "image", bid);
+    var name = Admob.adunitName(app, "mrec", "image", bid, deviceType);
     scheme.push(
         {
           app: app.localApp[1], name: name, originalAdType: Admob.originalAdTypeByName('mrec'),
@@ -605,8 +612,11 @@ Admob.compareAdUnitSchemes = function(scheme1, scheme2) {
 };
 
 // generate adunit name
-Admob.adunitName = function(app, adName, typeName, bidFloor) {
+Admob.adunitName = function(app, adName, typeName, bidFloor, deviceType) {
   var name = "Appodeal/" + app.id + "/" + adName + "/" + typeName;
+    if (deviceType) {
+        name += "/" + deviceType;
+    }
   if (bidFloor) {
     name += "/" + bidFloor;
   }
