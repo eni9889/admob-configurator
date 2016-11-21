@@ -331,22 +331,6 @@ Admob.adUnitRegex = function(name) {
     return result;
 };
 
-Admob.adUnitRegexNew = function(name) {
-    var result = {};
-    // works with both old and new ad unit names
-    var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\/(image|text|video|all)\/(phone|tablet)\//.exec(name);
-    if (matchedType && matchedType.length > 1) {
-        result.adType = matchedType[2];
-        result.formatName = matchedType[3];
-        result.deviceType = matchedType[4];
-        if (matchedType[1]) {
-            result.appId = parseInt(matchedType[1].substring(1));
-        }
-    }
-    return result;
-};
-
-
 // Return original ad type by name
 Admob.originalAdTypeByName = function(name) {
     if (Object.keys(Admob.adTypes).indexOf(name) > -1) {
@@ -1108,39 +1092,12 @@ Admob.prototype.interstitialAdUnitFormats = function(adUnit) {
     }
 };
 
-
-Admob.prototype.deviceTypeAdUnitName = function(appName, deviceType) {
-    var self = this;
-    var map = '';
-    var informationNew = Admob.adUnitRegexNew(appName);
-    var informationOld = Admob.adUnitRegex(appName);
-    //Если наименование имеет в себе {{deviceType}}
-    if (!jQuery.isEmptyObject(informationNew)) {
-        if(informationNew.deviceType = 'phone'){
-            return appName;
-        } else if (informationNew.deviceType = 'tablet') {
-            return appName;
-        } else {
-            self.showErrorDialog("Unable to define format ad unit format. Unknown ad type name.");
-            return appName;
-        }
-    }
-    //Если наименование без {{deviceType}}
-    if (!jQuery.isEmptyObject(informationOld)) {
-        map = appName.split('/');
-        map.splice(4, 0, 'phone');
-        return map.join('/');
-    }
-    return appName;
-};
-
 Admob.prototype.updateAdunitFormats = function(adUnit, callback) {
     console.log("Update ad unit formats " + adUnit[3]);
     var self = this;
 
     // get ad unit format to set/update on plugin sync start
     adUnit[Admob.unitKeys.formats] = self.interstitialAdUnitFormats(adUnit);
-    adUnit[Admob.unitKeys.appName] = self.deviceTypeAdUnitName(adUnit[Admob.unitKeys.appName]);
 
     var params = {method: "updateAdUnit", params: {2: adUnit}, xsrf: self.token};
     self.inventoryPost(params, function(data) {
@@ -1157,34 +1114,24 @@ Admob.prototype.updateAdunitFormats = function(adUnit, callback) {
 Admob.prototype.updateAppAdunitFormats = function(app, callback) {
     var self = this;
     if (app.localAdunits) {
-        var adUnits = {
-            interstitial: [],
-            other: []
-        };
         // select interstitial ad units with bid floor
-        adUnits.interstitial = $.grep(app.localAdunits, function(adUnit) {
-            if (adUnit[10] && adUnit[14] == 1) {
-                return adUnit;
-            }else{
-                adUnits.other.push(adUnit)
-            }
+        var adUnits = $.grep(app.localAdunits, function(adUnit) {
+            return (adUnit[10] && adUnit[14] == 1);
         });
 
         // update selected ad units
-        $.each(adUnits, function(index, value) {
-            Admob.synchronousEach(value, function(adUnit, next) {
-                var adUnitIndex = $.inArray(adUnit, app.localAdunits);
-                self.updateAdunitFormats(adUnit, function(updatedAdUnit) {
-                    // put updated ad unit to app local ad units array
-                    if (adUnitIndex > -1) {
-                        app.localAdunits[adUnitIndex] = updatedAdUnit;
-                    }
-                    next();
-                })
-            }, function() {
-                callback();
+        Admob.synchronousEach(adUnits, function(adUnit, next) {
+            var adUnitIndex = $.inArray(adUnit, app.localAdunits);
+            self.updateAdunitFormats(adUnit, function(updatedAdUnit) {
+                // put updated ad unit to app local ad units array
+                if (adUnitIndex > -1) {
+                    app.localAdunits[adUnitIndex] = updatedAdUnit;
+                }
+                next();
             })
-        });
+        }, function() {
+            callback();
+        })
     } else {
         callback();
     }
