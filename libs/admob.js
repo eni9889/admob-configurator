@@ -27,6 +27,7 @@ var Admob = function(userId, apiKey, publisherId, accountEmail, interstitialBids
         adType: 14,
         formats: 16
     };
+    Admob.deviceType = {tablet: 1, phone: 2};
     // initialize modal window
     this.modal = new Modal();
 };
@@ -443,10 +444,10 @@ Admob.localAdunitsToScheme = function(app) {
             if (adUnit[10]) {
                 bid = adUnit[10][0][5][1][1];
                 var floatBid = Admob.adunitBid(adUnit);
-                name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
+                name = Admob.adUnitNewName(app, adTypeName, adFormatName, floatBid);
                 hash = {app: admobAppId, name: name, originalAdType: originalAdType, adType: adType, formats: formats, bid: bid};
             } else {
-                name = Admob.adunitName(app, adTypeName, adFormatName);
+                name = Admob.adUnitNewName(app, adTypeName, adFormatName);
                 hash = {app: admobAppId, name: name, originalAdType: originalAdType, adType: adType, formats: formats};
             }
             scheme.push(hash);
@@ -461,49 +462,49 @@ Admob.adunitsScheme = function(app) {
     // default ad units
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "interstitial", "image"),
+        name: Admob.adUnitNewName(app, "interstitial", "image"),
         adType: 1,
         formats: [1],
         originalAdType: Admob.originalAdTypeByName('interstitial')
     });
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "interstitial", "text"),
+        name: Admob.adUnitNewName(app, "interstitial", "text"),
         adType: 1,
         formats: [0],
         originalAdType: Admob.originalAdTypeByName('interstitial')
     });
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "interstitial", "video"),
+        name: Admob.adUnitNewName(app, "interstitial", "video"),
         adType: 1,
         formats: [2],
         originalAdType: Admob.originalAdTypeByName('video')
     });
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "banner", "image"),
+        name: Admob.adUnitNewName(app, "banner", "image"),
         adType: 0,
         formats: [1],
         originalAdType: Admob.originalAdTypeByName('banner')
     });
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "banner", "text"),
+        name: Admob.adUnitNewName(app, "banner", "text"),
         adType: 0,
         formats: [0],
         originalAdType: Admob.originalAdTypeByName('banner')
     });
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "mrec", "image"),
+        name: Admob.adUnitNewName(app, "mrec", "image"),
         adType: 0,
         formats: [1],
         originalAdType: Admob.originalAdTypeByName('mrec')
     });
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "mrec", "text"),
+        name: Admob.adUnitNewName(app, "mrec", "text"),
         adType: 0,
         formats: [0],
         originalAdType: Admob.originalAdTypeByName('mrec')
@@ -515,7 +516,7 @@ Admob.adunitsScheme = function(app) {
     // ad units with bid floors
     // interstitial ad units
     Admob.interstitialBids.forEach(function(bid) {
-        var name = Admob.adunitName(app, "interstitial", "image", bid);
+        var name = Admob.adUnitNewName(app, "interstitial", "image", bid);
         scheme.push(
             {
                 app: app.localApp[1],
@@ -528,7 +529,7 @@ Admob.adunitsScheme = function(app) {
     });
     // interstitial ad units with all formats
     Admob.interstitialBids.forEach(function(bid) {
-        var name = Admob.adunitName(app, "interstitial", "all", bid);
+        var name = Admob.adUnitNewName(app, "interstitial", "all", bid);
         scheme.push(
             {
                 app: app.localApp[1],
@@ -541,7 +542,7 @@ Admob.adunitsScheme = function(app) {
     });
     // video ad units
     Admob.videoBids.forEach(function(bid) {
-        var name = Admob.adunitName(app, "interstitial", "video", bid);
+        var name = Admob.adUnitNewName(app, "interstitial", "video", bid);
         scheme.push(
             {
                 app: app.localApp[1],
@@ -554,7 +555,7 @@ Admob.adunitsScheme = function(app) {
     });
     // banner ad units
     Admob.bannerBids.forEach(function(bid) {
-        var name = Admob.adunitName(app, "banner", "image", bid);
+        var name = Admob.adUnitNewName(app, "banner", "image", bid);
         scheme.push(
             {
                 app: app.localApp[1], name: name, originalAdType: Admob.originalAdTypeByName('banner'),
@@ -563,7 +564,7 @@ Admob.adunitsScheme = function(app) {
     });
     // mrec ad units
     Admob.mrecBids.forEach(function(bid) {
-        var name = Admob.adunitName(app, "mrec", "image", bid);
+        var name = Admob.adUnitNewName(app, "mrec", "image", bid);
         scheme.push(
             {
                 app: app.localApp[1], name: name, originalAdType: Admob.originalAdTypeByName('mrec'),
@@ -616,6 +617,17 @@ Admob.adunitName = function(app, adName, typeName, bidFloor) {
         name += "/" + app.bundle_id.substring(0, bundleLength);
     }
     return (name);
+};
+
+Admob.adUnitNewName = function(app, adName, typeName, bidFloor, deviceType) {
+    var nameDevice = 'phone';
+    var nameOld =  Admob.adunitName(app, adName, typeName, bidFloor);
+    var map = nameOld.split('/');
+    if(deviceType){
+        nameDevice = deviceType;
+    }
+    map.splice(4, 0, nameDevice);
+    return (map.join('/'));
 };
 
 // get remote appodeal apps with adunits
