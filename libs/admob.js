@@ -5,11 +5,11 @@ var Admob = function(userId, apiKey, publisherId, accountEmail, interstitialBids
     this.publisherId = publisherId;
     this.accountEmail = accountEmail;
     // internal admob request url
-    Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
+    Admob.inventoryUrl = inventoryUrl();
     // get all current user's apps and adunits from server
-    Admob.remoteInventoryUrl = "https://www.appodeal.com/api/v2/apps_with_ad_units";
+    Admob.remoteInventoryUrl = remoteInventoryUrl();
     // sync local adunits with the server
-    Admob.syncUrl = "https://www.appodeal.com/api/v2/sync_inventory";
+    Admob.syncUrl = syncUrl();
     // internal admob params
     Admob.types = {text: 0, image: 1, video: 2};
     // appodeal ad unit params
@@ -1157,24 +1157,34 @@ Admob.prototype.updateAdunitFormats = function(adUnit, callback) {
 Admob.prototype.updateAppAdunitFormats = function(app, callback) {
     var self = this;
     if (app.localAdunits) {
+        var adUnits = {
+            interstitial: [],
+            other: []
+        };
         // select interstitial ad units with bid floor
-        var adUnits = $.grep(app.localAdunits, function(adUnit) {
-            return (adUnit[10] && adUnit[14] == 1);
+        adUnits.interstitial = $.grep(app.localAdunits, function(adUnit) {
+            if (adUnit[10] && adUnit[14] == 1) {
+                return adUnit;
+            }else{
+                adUnits.other.push(adUnit)
+            }
         });
 
         // update selected ad units
-        Admob.synchronousEach(adUnits, function(adUnit, next) {
-            var adUnitIndex = $.inArray(adUnit, app.localAdunits);
-            self.updateAdunitFormats(adUnit, function(updatedAdUnit) {
-                // put updated ad unit to app local ad units array
-                if (adUnitIndex > -1) {
-                    app.localAdunits[adUnitIndex] = updatedAdUnit;
-                }
-                next();
+        $.each(adUnits, function(index, value) {
+            Admob.synchronousEach(value, function(adUnit, next) {
+                var adUnitIndex = $.inArray(adUnit, app.localAdunits);
+                self.updateAdunitFormats(adUnit, function(updatedAdUnit) {
+                    // put updated ad unit to app local ad units array
+                    if (adUnitIndex > -1) {
+                        app.localAdunits[adUnitIndex] = updatedAdUnit;
+                    }
+                    next();
+                })
+            }, function() {
+                callback();
             })
-        }, function() {
-            callback();
-        })
+        });
     } else {
         callback();
     }

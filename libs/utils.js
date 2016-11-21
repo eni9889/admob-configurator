@@ -28,6 +28,34 @@ function iamAdminPageUrl(projectName) {
     return 'https://console.developers.google.com/iam-admin/projects?filter=name:' + projectName + '*';
 }
 
+function appodealUrl(){
+    return 'http://www.appodeal.com';
+}
+
+function appodealUrlSsl(){
+    return 'https://www.appodeal.com';
+}
+
+function appodealStatusUrl(){
+    return (appodealUrlSsl() + "/api/v2/get_api_key");
+}
+
+function remoteInventoryUrl(){
+    return appodealUrlSsl() + "/api/v2/apps_with_ad_units";
+}
+
+function syncUrl(){
+    return appodealUrlSsl() + "/api/v2/sync_inventory";
+}
+
+function inventoryUrl() {
+    return "https://apps.admob.com/tlcgwt/inventory";
+}
+
+function saveExtensionLogsUrl(){
+    return appodealUrlSsl()+ "/api/v2/save_extension_logs";
+}
+
 // page with title Create client ID
 function isOauthClientPage() {
     var page_link = document.location.toString();
@@ -98,7 +126,7 @@ function sendLogs(apiKey, userId, mode, part, version, items, callback) {
     var params = JSON.stringify(json);
     $.ajax({
         method: "POST",
-        url: "https://www.appodeal.com/api/v2/save_extension_logs",
+        url: saveExtensionLogsUrl(),
         contentType: "application/json",
         dataType: "json",
         data: params

@@ -1,6 +1,6 @@
-APPODEAL_URL = "http://www.appodeal.com";
-APPODEAL_URL_SSL = "https://www.appodeal.com";
-APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
+APPODEAL_URL = appodealUrl();
+APPODEAL_URL_SSL = appodealUrlSsl();
+APPODEAL_STATUS_URL = appodealStatusUrl();
 
 function click(e) {
   console.log(e.target.id);
