@@ -1111,25 +1111,33 @@ Admob.prototype.updateAdunitFormats = function(adUnit, callback) {
 };
 
 // Add video format to all app ad units
-Admob.prototype.updateAppAdunitFormats = function(app, callback) {
+Admob.prototype.updateAppAdunitFormats = function (app, callback) {
     var self = this;
+    var adUnits = {
+        interstitial: [],
+        banner: [],
+        video: [],
+        mrec: []
+    };
     if (app.localAdunits) {
         // select interstitial ad units with bid floor
-        var adUnits = $.grep(app.localAdunits, function(adUnit) {
-            return (adUnit[10] && adUnit[14] == 1);
+        $.grep(app.localAdunits, function (adUnit) {
+            if (adUnit[10] && adUnit[14] == 1) {
+                adUnits.interstitial.push(adUnit)
+            }
         });
 
         // update selected ad units
-        Admob.synchronousEach(adUnits, function(adUnit, next) {
+        Admob.synchronousEach(adUnits.interstitial, function (adUnit, next) {
             var adUnitIndex = $.inArray(adUnit, app.localAdunits);
-            self.updateAdunitFormats(adUnit, function(updatedAdUnit) {
+            self.updateAdunitFormats(adUnit, function (updatedAdUnit) {
                 // put updated ad unit to app local ad units array
                 if (adUnitIndex > -1) {
                     app.localAdunits[adUnitIndex] = updatedAdUnit;
                 }
                 next();
             })
-        }, function() {
+        }, function () {
             callback();
         })
     } else {
@@ -1138,15 +1146,15 @@ Admob.prototype.updateAppAdunitFormats = function(app, callback) {
 };
 
 // Add video format to all appodeal app's adunits
-Admob.prototype.updateFormats = function(callback) {
+Admob.prototype.updateFormats = function (callback) {
     console.log("Update absent formats");
     var self = this;
     // update formats in all local adunits from appodeal apps
-    Admob.synchronousEach(self.inventory.slice(), function(app, next) {
-        self.updateAppAdunitFormats(app, function() {
+    Admob.synchronousEach(self.inventory.slice(), function (app, next) {
+        self.updateAppAdunitFormats(app, function () {
             next();
         })
-    }, function() {
+    }, function () {
         callback();
     })
 };
