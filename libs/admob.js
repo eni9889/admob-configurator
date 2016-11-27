@@ -1110,6 +1110,51 @@ Admob.prototype.updateAdunitFormats = function(adUnit, callback) {
     })
 };
 
+Admob.adUnitRegexNew = function(name) {
+    var result = {};
+    // works with both old and new ad unit names
+    var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\/(image|text|video|all)\/(phone|tablet)\//.exec(name);
+    if (matchedType && matchedType.length > 1) {
+        result.adType = matchedType[2];
+        result.formatName = matchedType[3];
+        result.deviceType = matchedType[4];
+        if (matchedType[1]) {
+            result.appId = parseInt(matchedType[1].substring(1));
+        }
+    }
+    return result;
+};
+
+Admob.prototype.deviceTypeAdUnitName = function(appName, deviceType) {
+    var result = {
+        appName: appName,
+        replacement: false
+    };
+    var self = this;
+    var map = '';
+    var informationNew = Admob.adUnitRegexNew(appName);
+    var informationOld = Admob.adUnitRegex(appName);
+    //Если наименование имеет в себе {{deviceType}}
+    if (!jQuery.isEmptyObject(informationNew)) {
+        if(informationNew.deviceType = 'phone'){
+            return result;
+        } else if (informationNew.deviceType = 'tablet') {
+            return result;
+        } else {
+            self.showErrorDialog("Unable to define format ad unit format. Unknown ad type name.");
+            return result;
+        }
+    }
+    //Если наименование без {{deviceType}}
+    if (!jQuery.isEmptyObject(informationOld)) {
+        map = appName.split('/');
+        map.splice(4, 0, 'phone');
+        result.appName = map.join('/');
+        result.replacement = true;
+    }
+    return result;
+};
+
 // Add video format to all app ad units
 Admob.prototype.updateAppAdunitFormats = function (app, callback) {
     var self = this;
@@ -1117,7 +1162,8 @@ Admob.prototype.updateAppAdunitFormats = function (app, callback) {
         interstitial: [],
         banner: [],
         video: [],
-        mrec: []
+        mrec: [],
+        replaces:[]
     };
     if (app.localAdunits) {
         // select interstitial ad units with bid floor
@@ -1125,6 +1171,18 @@ Admob.prototype.updateAppAdunitFormats = function (app, callback) {
             if (adUnit[10] && adUnit[14] == 1) {
                 adUnits.interstitial.push(adUnit)
             }
+            var result = self.deviceTypeAdUnitName(adUnit[Admob.unitKeys.appName]);
+            if(result.replacement){
+                adUnit[Admob.unitKeys.appName] = result.appName;
+                adUnits.replaces.push(adUnit)
+            }
+        });
+
+        Admob.synchronousEach(adUnits.replaces, function (adUnit, next) {
+            var params = {method: "updateAdUnit", params: {2: adUnit}, xsrf: self.token};
+            self.inventoryPost(params, function(data) {
+                next();
+            });
         });
 
         // update selected ad units
